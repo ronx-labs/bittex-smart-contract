@@ -131,7 +131,7 @@ contract Bittex {
         require(swap.winner == address(0), "The swap has already been finalized");
 
         // Check if the swap has expired
-        require(block.timestamp > swap.timestamp + 300, "The swap has not expired yet");
+        require(block.timestamp < swap.timestamp + 300, "The swap has already expired");
 
         // Get input and output token addresses
         address _inputToken = swap.inputToken;
