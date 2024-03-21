@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Hardhat build directory
+artifacts/
+cache/
+
+# Hardhat network's ephemeral databases
+hardhat-network/
+
+# Local secrets
+.env
+.secrets.json
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE and editors
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*.tmp
