@@ -49,7 +49,7 @@ contract Bittex {
         require(_inputToken != _outputToken, "Input and output tokens cannot be the same");
         require(_inputTokenAmount > 0, "Input token amount must be greater than 0");
 
-        // Generate swapId by hashing creator, inputToken, outputToken, inputTokenAmount, and timestamp
+        // Generate swapId by hashing creator, inputToken, outputToken, inputTokenAmount and timestamp
         swapId = keccak256(abi.encodePacked(msg.sender, _inputToken, _outputToken, _inputTokenAmount, block.timestamp));
 
         // Create a new Swap instance in storage
@@ -172,14 +172,14 @@ contract Bittex {
         uint256 bidAmount = swap.bids[msg.sender];
         require(bidAmount > 0, "No bid found for the given address in this swap. Cannot withdraw.");
 
-        // Check if the bidder has already withdrawn
-        require(!swap.hasWithdrawn[msg.sender], "Bidder has already withdrawn");
+        // Check if the withdrawer has already made a withdrawal
+        require(!swap.hasWithdrawn[msg.sender], "Withdrawer has already made a withdrawal");
 
-        // Send output token to the bidder
+        // Send output token to the withdrawer
         address _outputToken = swap.outputToken;
         require(IERC20(_outputToken).transferFrom(address(this), msg.sender, bidAmount), "Transfer failed");
 
-        // Mark the bidder as withdrawn
+        // Mark the withdrawer as withdrawn
         swap.hasWithdrawn[msg.sender] = true;
     }
 }
