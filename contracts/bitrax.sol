@@ -28,6 +28,7 @@ contract Bittex {
     mapping(bytes32 => Swap) public swaps;
     mapping(bytes32 => address) private swapCreators;
 
+    uint constant expiryTime = 300;
     bool internal locked;
 
     event SwapCreated(bytes32 swapId);
@@ -131,7 +132,7 @@ contract Bittex {
         require(swap.winner == address(0), "The swap has already been finalized");
 
         // Check if the swap has expired
-        require(block.timestamp < swap.timestamp + 300, "The swap has already expired");
+        require(block.timestamp < swap.timestamp + expiryTime, "The swap has already expired");
 
         // Get input and output token addresses
         address _inputToken = swap.inputToken;
@@ -160,7 +161,7 @@ contract Bittex {
         Swap storage swap = swaps[_swapId];
 
         // Check if the swap has been finalized or expired
-        require(swap.winner != address(0) || block.timestamp > swap.timestamp + 300, "The swap has not been finalized or expired yet");
+        require(swap.winner != address(0) || block.timestamp > swap.timestamp + expiryTime, "The swap has not been finalized or expired yet");
 
         // Get bid information from swaps stored in the storage
         uint256 bidAmount = swap.bids[msg.sender];
