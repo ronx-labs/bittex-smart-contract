@@ -152,9 +152,14 @@ contract Bittex {
         swap.winner = bidder;
     }
 
-    function getBidInfo(bytes32 _swapId, address _bidder) public view returns (uint256 bidAmount) {
+    function getBidInfo(bytes32 _swapId, address _bidder) public view returns (uint256) {
         // Get bid information
         return swaps[_swapId].bids[_bidder];
+    }
+
+    function getWinner(bytes32 _swapId) public view returns (address) {
+        // Get the winner of the swap
+        return swaps[_swapId].winner;
     }
 
     function withdrawBid(bytes32 _swapId) public noReentrant {
