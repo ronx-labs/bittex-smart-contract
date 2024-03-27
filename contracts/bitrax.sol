@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 interface IERC20 {
     function transferFrom(address _from, address _to, uint256 _amount) external returns (bool);
     function approve(address _spender, uint256 _amount) external returns (bool);
+    function transfer(address _recipient, uint256 _amount) external returns (bool);
 }
 
 
@@ -146,7 +147,7 @@ contract Bittex {
         require(IERC20(_inputToken).transferFrom(msg.sender, bidder, swap.inputTokenAmount), "Transfer failed");
 
         // Send output token to the swap creator
-        require(IERC20(_outputToken).transferFrom(address(this), msg.sender, swap.bids[bidder]), "Transfer failed");
+        require(IERC20(_outputToken).transfer(msg.sender, swap.bids[bidder]), "Transfer failed");
 
         // Set the winner as the chosen bidder
         swap.winner = bidder;
@@ -177,7 +178,7 @@ contract Bittex {
 
         // Send output token to the withdrawer
         address _outputToken = swap.outputToken;
-        require(IERC20(_outputToken).transferFrom(address(this), msg.sender, bidAmount), "Transfer failed");
+        require(IERC20(_outputToken).transfer(msg.sender, bidAmount), "Transfer failed");
 
         // Mark the withdrawer as withdrawn
         swap.hasWithdrawn[msg.sender] = true;
