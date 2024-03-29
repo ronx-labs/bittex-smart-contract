@@ -113,6 +113,9 @@ contract Bittex {
         // Ensure that a bidder has not already made a bid
         require(swap.bids[msg.sender] == 0, "Each bidder can only make one bid");
 
+        // Ensure that the swap creator is not bidding on his own swap
+        require(msg.sender != swapCreators[_swapId], "Swap creator cannot bid on his own swap");
+
         // Transfer output token from the bidder to this contract
         address _outputToken = swaps[_swapId].outputToken;
         require(_outputToken != address(0), "Swap ID not found");
