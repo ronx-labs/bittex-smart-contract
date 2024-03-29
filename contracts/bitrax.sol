@@ -163,6 +163,16 @@ contract Bittex {
         return swaps[_swapId].winner;
     }
 
+    function isFinalized(bytes32 _swapId) public view returns (bool) {
+        // Check if the swap has been finalized
+        return swaps[_swapId].winner != address(0);
+    }
+
+    function isExpired(bytes32 _swapId) public view returns (bool) {
+        // Check if the swap has expired
+        return block.timestamp > swaps[_swapId].timestamp + expiryTime;
+    }
+
     function withdrawBid(bytes32 _swapId) public noReentrant {
         Swap storage swap = swaps[_swapId];
 
