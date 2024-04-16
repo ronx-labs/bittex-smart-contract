@@ -186,6 +186,9 @@ contract Bittex {
         uint256 bidAmount = swap.bids[msg.sender];
         require(bidAmount > 0, "No bid found for the given address in this swap. Cannot withdraw.");
 
+        // Check if the withdrawer is the winner
+        require(msg.sender != swap.winner, "Winner cannot withdraw bid");
+
         // Check if the withdrawer has already made a withdrawal
         require(!swap.hasWithdrawn[msg.sender], "Withdrawer has already made a withdrawal");
 
