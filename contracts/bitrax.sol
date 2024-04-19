@@ -129,6 +129,26 @@ contract Bittex {
         }
     }
 
+    function getBidInfo(bytes32 _swapId, address _bidder) public view returns (uint256) {
+        // Get bid information
+        return swaps[_swapId].bids[_bidder];
+    }
+
+    function getWinner(bytes32 _swapId) public view returns (address) {
+        // Get the winner of the swap
+        return swaps[_swapId].winner;
+    }
+
+    function isFinalized(bytes32 _swapId) public view returns (bool) {
+        // Check if the swap has been finalized
+        return swaps[_swapId].winner != address(0);
+    }
+
+    function isExpired(bytes32 _swapId) public view returns (bool) {
+        // Check if the swap has expired
+        return block.timestamp > swaps[_swapId].timestamp + expiryTime;
+    }
+
     function registerBid(bytes32 _swapId, address _bidder, uint256 _bidAmount) private {
         // Register bid information
         Swap storage swap = swaps[_swapId];
@@ -188,26 +208,6 @@ contract Bittex {
 
         // Set the winner as the chosen bidder
         swap.winner = bidder;
-    }
-
-    function getBidInfo(bytes32 _swapId, address _bidder) public view returns (uint256) {
-        // Get bid information
-        return swaps[_swapId].bids[_bidder];
-    }
-
-    function getWinner(bytes32 _swapId) public view returns (address) {
-        // Get the winner of the swap
-        return swaps[_swapId].winner;
-    }
-
-    function isFinalized(bytes32 _swapId) public view returns (bool) {
-        // Check if the swap has been finalized
-        return swaps[_swapId].winner != address(0);
-    }
-
-    function isExpired(bytes32 _swapId) public view returns (bool) {
-        // Check if the swap has expired
-        return block.timestamp > swaps[_swapId].timestamp + expiryTime;
     }
 
     function withdrawBid(bytes32 _swapId) public noReentrant {
