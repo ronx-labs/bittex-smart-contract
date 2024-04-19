@@ -11,6 +11,8 @@ interface IERC20 {
 
 
 contract Bittex {
+    address private _owner;
+
     struct Swap {
         address                     inputToken;
         address                     outputToken;
@@ -28,17 +30,27 @@ contract Bittex {
 
     mapping(bytes32 => Swap) public swaps;
     mapping(bytes32 => address) private swapCreators;
+    mapping(address => bool) public tokenWhitelist;
 
     uint constant expiryTime = 300;
     bool internal locked;
 
     event SwapCreated(bytes32 swapId);
 
+    constructor() {
+        _owner = msg.sender;
+    }
+
     modifier noReentrant() {
-        require(!locked, "No re-entrancy");
+        require(!locked, "No re-entrancy allowed");
         locked = true;
         _;
         locked = false;
+    }
+
+    modifier onlyOwner {
+        require(msg.sender == _owner, "Only the contract owner can call this function");
+        _;
     }
 
     modifier onlySwapCreator(bytes32 _swapId) {
@@ -46,7 +58,21 @@ contract Bittex {
         _;
     }
 
-    function createSwap(address _inputToken, address _outputToken, uint256 _inputTokenAmount) public returns (bytes32 swapId) {
+    modifier onlyWhitelisted(address token) {
+        require(tokenWhitelist[token], "Token not whitelisted");
+        _;
+    }
+
+    function whitelistToken(address _token, bool _status) public onlyOwner {
+        tokenWhitelist[_token] = _status;
+    }
+
+    function createSwap(address _inputToken, address _outputToken, uint256 _inputTokenAmount)
+        public 
+        onlyWhitelisted(_inputToken)
+        onlyWhitelisted(_outputToken)
+        returns (bytes32 swapId)
+    {
         require(_inputToken != _outputToken, "Input and output tokens cannot be the same");
         require(_inputTokenAmount > 0, "Input token amount must be greater than 0");
 
