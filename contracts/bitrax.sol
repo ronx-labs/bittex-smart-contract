@@ -114,10 +114,15 @@ contract Bittex {
     function chooseRandomBidder(bytes32 _swapId) private view returns (address) {
         // Choose a random bidder from the top 3 bidders
         Swap storage swap = swaps[_swapId];
-        uint256 random = uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao))) % 3;
-        if (random == 0 && swap.topBidder3 != address(0)) {
-            return swap.topBidder3;
-        } else if (random == 1 && swap.topBidder2 != address(0)) {
+        uint256 randomNumber = uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao)));
+        if (randomNumber % 3 == 0) {
+            if (swap.topBidder3 != address(0))
+                return swap.topBidder3;
+            else if (randomNumber % 2 == 0 && swap.topBidder2 != address(0))
+                return swap.topBidder2;
+            else
+                return swap.topBidder1;
+        } else if (randomNumber % 3 == 1 && swap.topBidder2 != address(0)) {
             return swap.topBidder2;
         } else {
             return swap.topBidder1;
