@@ -67,35 +67,6 @@ contract Bittex {
         tokenWhitelist[_token] = _status;
     }
 
-    function createSwap(address _inputToken, address _outputToken, uint256 _inputTokenAmount)
-        public 
-        onlyWhitelisted(_inputToken)
-        onlyWhitelisted(_outputToken)
-        returns (bytes32 swapId)
-    {
-        require(_inputToken != _outputToken, "Input and output tokens cannot be the same");
-        require(_inputTokenAmount > 0, "Input token amount must be greater than 0");
-
-        // Generate swapId by hashing creator, inputToken, outputToken, inputTokenAmount and timestamp
-        swapId = keccak256(abi.encodePacked(msg.sender, _inputToken, _outputToken, _inputTokenAmount, block.timestamp));
-
-        // Create a new Swap instance in storage
-        Swap storage newSwap = swaps[swapId];
-        newSwap.swapId = swapId;
-        newSwap.inputToken = _inputToken;
-        newSwap.outputToken = _outputToken;
-        newSwap.inputTokenAmount = _inputTokenAmount;
-        newSwap.timestamp = block.timestamp;
-
-        // Store the swap creator
-        swapCreators[swapId] = msg.sender;
-
-        // Emit the SwapCreated event
-        emit SwapCreated(swapId);
-
-        return swapId;
-    }
-
     function updateTopBidders(bytes32 _swapId, address _bidder, uint256 _bidAmount) private {
         // Update the top 3 bidders
         Swap storage swap = swaps[_swapId];
@@ -149,40 +120,35 @@ contract Bittex {
         return block.timestamp > swaps[_swapId].timestamp + expiryTime;
     }
 
-    function registerBid(bytes32 _swapId, address _bidder, uint256 _bidAmount) private {
-        // Register bid information
-        Swap storage swap = swaps[_swapId];
-        swap.bidders.push(_bidder);
-        swap.bids[_bidder] = _bidAmount;
+    function createSwap(address _inputToken, address _outputToken, uint256 _inputTokenAmount)
+        public 
+        onlyWhitelisted(_inputToken)
+        onlyWhitelisted(_outputToken)
+        returns (bytes32 swapId)
+    {
+        require(_inputToken != _outputToken, "Input and output tokens cannot be the same");
+        require(_inputTokenAmount > 0, "Input token amount must be greater than 0");
+
+        // Generate swapId by hashing creator, inputToken, outputToken, inputTokenAmount and timestamp
+        swapId = keccak256(abi.encodePacked(msg.sender, _inputToken, _outputToken, _inputTokenAmount, block.timestamp));
+
+        // Create a new Swap instance in storage
+        Swap storage newSwap = swaps[swapId];
+        newSwap.swapId = swapId;
+        newSwap.inputToken = _inputToken;
+        newSwap.outputToken = _outputToken;
+        newSwap.inputTokenAmount = _inputTokenAmount;
+        newSwap.timestamp = block.timestamp;
+
+        // Store the swap creator
+        swapCreators[swapId] = msg.sender;
+
+        // Emit the SwapCreated event
+        emit SwapCreated(swapId);
+
+        return swapId;
     }
 
-    /* The bidder should approve the contract to transfer the output token before calling this function */
-    function makeBid(bytes32 _swapId, uint256 _amount) public noReentrant {
-        require(_amount > 0, "Bid amount must be greater than 0");
-        Swap storage swap = swaps[_swapId];
-
-        // Ensure that the swap has not expired
-        require(block.timestamp < swap.timestamp + expiryTime, "Cannot bid on expired swap");
-
-        // Ensure that a bidder has not already made a bid
-        require(swap.bids[msg.sender] == 0, "Each bidder can only make one bid");
-
-        // Ensure that the swap creator is not bidding on his own swap
-        require(msg.sender != swapCreators[_swapId], "Swap creator cannot bid on his own swap");
-
-        // Transfer output token from the bidder to this contract
-        address _outputToken = swaps[_swapId].outputToken;
-        require(_outputToken != address(0), "Swap ID not found");
-        require(IERC20(_outputToken).transferFrom(msg.sender, address(this), _amount), "Transfer failed");
-
-        // Update the top 3 bidders
-        updateTopBidders(_swapId, msg.sender, _amount);
-
-        // Register bid information
-        registerBid(_swapId, msg.sender, _amount);
-    }
-
-    /* The swap creator should approve the contract to transfer the input token before calling this function */
     function finalizeSwap(bytes32 _swapId) public onlySwapCreator(_swapId) noReentrant {
         Swap storage swap = swaps[_swapId];
 
@@ -208,6 +174,38 @@ contract Bittex {
 
         // Set the winner as the chosen bidder
         swap.winner = bidder;
+    }
+
+    function registerBid(bytes32 _swapId, address _bidder, uint256 _bidAmount) private {
+        // Register bid information
+        Swap storage swap = swaps[_swapId];
+        swap.bidders.push(_bidder);
+        swap.bids[_bidder] = _bidAmount;
+    }
+
+    function makeBid(bytes32 _swapId, uint256 _amount) public noReentrant {
+        require(_amount > 0, "Bid amount must be greater than 0");
+        Swap storage swap = swaps[_swapId];
+
+        // Ensure that the swap has not expired
+        require(block.timestamp < swap.timestamp + expiryTime, "Cannot bid on expired swap");
+
+        // Ensure that a bidder has not already made a bid
+        require(swap.bids[msg.sender] == 0, "Each bidder can only make one bid");
+
+        // Ensure that the swap creator is not bidding on his own swap
+        require(msg.sender != swapCreators[_swapId], "Swap creator cannot bid on his own swap");
+
+        // Transfer output token from the bidder to this contract
+        address _outputToken = swaps[_swapId].outputToken;
+        require(_outputToken != address(0), "Swap ID not found");
+        require(IERC20(_outputToken).transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+
+        // Update the top 3 bidders
+        updateTopBidders(_swapId, msg.sender, _amount);
+
+        // Register bid information
+        registerBid(_swapId, msg.sender, _amount);
     }
 
     function withdrawBid(bytes32 _swapId) public noReentrant {
