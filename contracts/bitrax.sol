@@ -136,6 +136,9 @@ contract Bittex {
         require(_amount > 0, "Bid amount must be greater than 0");
         Swap storage swap = swaps[_swapId];
 
+        // Ensure that the swap has not expired
+        require(block.timestamp < swap.timestamp + expiryTime, "Cannot bid on expired swap");
+
         // Ensure that a bidder has not already made a bid
         require(swap.bids[msg.sender] == 0, "Each bidder can only make one bid");
 
