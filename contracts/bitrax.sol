@@ -86,18 +86,17 @@ contract Bittex {
         // Choose a random bidder from the top 3 bidders
         Swap storage swap = swaps[_swapId];
         uint256 randomNumber = uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao)));
-        if (randomNumber % 3 == 0) {
-            if (swap.topBidder3 != address(0))
-                return swap.topBidder3;
-            else if (randomNumber % 2 == 0 && swap.topBidder2 != address(0))
-                return swap.topBidder2;
-            else
-                return swap.topBidder1;
-        } else if (randomNumber % 3 == 1 && swap.topBidder2 != address(0)) {
-            return swap.topBidder2;
-        } else {
+        if (swap.topBidder1 == address(0))
+            return address(0);
+        if (swap.topBidder2 == address(0))
             return swap.topBidder1;
-        }
+        if (swap.topBidder3 == address(0))
+            return randomNumber % 2 == 0 ? swap.topBidder1 : swap.topBidder2;
+        if (randomNumber % 3 == 0)
+            return swap.topBidder1;
+        if (randomNumber % 3 == 1)
+            return swap.topBidder2;
+        return swap.topBidder3;
     }
 
     function getBidInfo(bytes32 _swapId, address _bidder) public view returns (uint256) {
