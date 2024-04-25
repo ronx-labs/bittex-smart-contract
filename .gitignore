@@ -8,6 +8,10 @@ cache/
 # Hardhat network's ephemeral databases
 hardhat-network/
 
+hardhat.config.js
+package.json
+package-lock.json
+
 # Local secrets
 .env
 .secrets.json
