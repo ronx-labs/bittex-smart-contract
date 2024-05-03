@@ -99,6 +99,11 @@ contract Bittex {
         return swap.topBidder3;
     }
 
+    function getBidders(bytes32 _swapId) public view returns (address[] memory) {
+        // Get all bidders
+        return swaps[_swapId].bidders;
+    }
+
     function getBidInfo(bytes32 _swapId, address _bidder) public view returns (uint256) {
         // Get bid information
         return swaps[_swapId].bids[_bidder];
